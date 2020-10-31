@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #ifdef M5ATOM
 #include <M5Atom.h>
+#include <FastLED.h>
 #endif
 
 #ifdef ESP32
@@ -41,6 +42,15 @@
   const char* password="SSID_PASSWORD";
   const char* mqtt_server = "192.168.XX.YY";
 */
+
+#ifdef M5ATOM
+#define LED_TYPE    WS2812
+#define COLOR_ORDER GRB
+#define BRIGHTNESS          44
+// Internal LED controller
+#define NUM_LEDS    1
+CRGB ledAtom[NUM_LEDS];
+#endif
 
 StaticJsonDocument<1024> metriques;
 
@@ -149,7 +159,25 @@ void setup_mDNS() {
 
 
 void setup_wifi() {
-  delay(10);
+  delay(500);
+
+  int led_state = 0;
+  // https://github.com/esikora/ESP32App_Led_IR/blob/master/ESP32App_Led_IR.ino
+  Serial.println("A");
+  FastLED.addLeds<NEOPIXEL, LED_BUILTIN>(ledAtom, NUM_LEDS);
+  Serial.println("B");
+  FastLED.clear();
+  Serial.println("C");
+  FastLED.setBrightness(BRIGHTNESS);
+  Serial.println("D");
+  ledAtom[0].setRGB(120,0,160);
+  Serial.println(ledAtom[0]);
+  Serial.println("E");
+  //FastLED.show();
+  Serial.println("F");
+  M5.dis.drawpix(0, CRGB(200, 200, 40));
+  Serial.println("G");
+
   // We start by connecting to a WiFi network
   Serial.printf("\nConnecting to %s\n", ssid);
 
@@ -163,6 +191,17 @@ void setup_wifi() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(F("."));
+
+    // Blink the builtin led until we are connected to WiFi. This is an external
+    // queue to manually reset the device.
+    //FastLED.clear();
+    if (++led_state % 2 == 0) {
+      ledAtom[0].setRGB(130, 0, 0);
+    }
+    else {
+      ledAtom[0].setRGB(0, 0, 130);
+    }
+    //FastLED.show();
   }
 
   randomSeed(micros());
@@ -170,6 +209,10 @@ void setup_wifi() {
   Serial.println(F(""));
   Serial.println(F("WiFi connected"));
   Serial.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
+  ledAtom[0].setRGB(0, 200, 0);
+  delay(1000);
+  ledAtom[0].setRGB(0, 0, 0);
+  //FastLED.show();
 
   setup_mDNS();
 }
@@ -274,6 +317,8 @@ void setup_sensors(DHT& dht, DallasTemperature& sensors) {
 
 
 void setup() {
+  delay(1000);
+
   setup_serial();
 
 #ifdef M5ATOM
