@@ -9,13 +9,6 @@
 #ifdef M5ATOM
 #include <M5Atom.h>
 #endif
-//#include <Hash.h>
-
-/*
-#include <Wire.h>
-extern Wire
-Wire.begin(25,21,10000);
-*/
 
 #ifdef ESP32
 #include <WiFi.h>
@@ -55,9 +48,8 @@ const bool send_to_MQTT = true;
 char mqtt_buffer[1024];
 
 // Defined in plaformio.ini
-//#define DHTPIN  25       // Digital pin connected to the DHT sensor
-#define DHTTYPE DHT22   // DHT 22 (AM2302)
-DHT dht(DHTPIN, DHTTYPE);
+// DHT 22 (AM2302)
+DHT dht(DHTPIN, DHT22);
 
 // current temperature & humidity, updated in loop()
 float DHT22_temperature = -100.0;
@@ -93,21 +85,16 @@ float DHT22_humidity    = -100.0;
 08:28:46.343 -> No more addresses.
 */
 DeviceAddress DS18B20_address[] = {
+  { 0x28, 0x71, 0xD3, 0x0D, 0x3A, 0x19, 0x01, 0x88 },
   { 0x28, 0x9E, 0x7F, 0x19, 0x3A, 0x19, 0x01, 0xA1 },
   { 0x28, 0xC1, 0xCE, 0x23, 0x3A, 0x19, 0x01, 0x7A },
-  { 0x28, 0x71, 0xD3, 0x0D, 0x3A, 0x19, 0x01, 0x88 },
   { 0x28, 0xD5, 0x2C, 0x18, 0x3A, 0x19, 0x01, 0x78 },
   { 0x28, 0xD7, 0x9A, 0xF0, 0x39, 0x19, 0x01, 0x74 },
 };
 
-// Trying to change pin ONEWIREBUS to SDA
-//Wire.begin(ONEWIREBUS, 23, 1000000);
-
 // GPIO where the DS18B20 is connected to
-const uint8_t oneWireBus = ONEWIREBUS;
-
 // Setup a oneWire instance to communicate with any OneWire devices
-OneWire oneWire(oneWireBus);
+OneWire oneWire(ONEWIREBUS);
 
 // Pass our oneWire reference to Dallas Temperature sensor
 DallasTemperature sensors(&oneWire);
@@ -164,8 +151,7 @@ void setup_mDNS() {
 void setup_wifi() {
   delay(10);
   // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.printf("Connecting to %s\n", ssid);
+  Serial.printf("\nConnecting to %s\n", ssid);
 
   WiFi.begin(ssid, password);
 #ifdef ESP32
@@ -216,12 +202,12 @@ void setup_web_server(AsyncWebServer& web_server) {
     request->send_P(200, F("application/json"), json.c_str());
   });
 
-  /*
+#ifdef ASYNCWEBSERVER_REGEX
   web_server.on("^\\/sensor\\/([0-9]+)$", HTTP_GET, [] (AsyncWebServerRequest * request) {
     const String sensorId = request->pathArg(0);
     request->send_P(200, F("text/html"), sensorId.c_str());
   });
-  */
+#endif
 
   web_server.onNotFound([](AsyncWebServerRequest * request) {
     request->send(200, F("text/html"), F("Il n'y a pas de page"));
@@ -267,6 +253,7 @@ void setup_sensors(DHT& dht, DallasTemperature& sensors) {
 
   // Start the DS18B20 sensor
   sensors.begin();
+  sensors.setResolution(9);
   delay(1200);
   {
     const unsigned int num_DS18B20 = sensors.getDeviceCount();
@@ -281,6 +268,7 @@ void setup_sensors(DHT& dht, DallasTemperature& sensors) {
   }
 
   serializeJson(metriques, Serial);
+  Serial.println();
 }
 
 
@@ -291,6 +279,7 @@ void setup() {
 #ifdef M5ATOM
   // Enable Serial, disable I2C, enable Display
   M5.begin(true, false, false);
+  Serial.println();
   sensors.begin();
 #endif
 
@@ -356,6 +345,7 @@ void updateDHT22(const unsigned long currentMillis) {
     DHT22_humidity = newH;
     Serial.printf("%s - DHT22: %f%%H\n", String(currentMillis).c_str(), DHT22_humidity);
   }
+
   JsonObject data = metriques[F("DHT22")];
   data[F("humidity")]    = DHT22_humidity;
   data[F("temperature")] = DHT22_temperature;
@@ -375,24 +365,14 @@ void updateDHT22(const unsigned long currentMillis) {
 
 
 void updateDS18B20(const unsigned long currentMillis) {
+  Serial.printf("Wait for convertion: %d\n", sensors.getWaitForConversion());  // Debugging
+  Serial.printf("Sensors' resolution: %d\n", sensors.getResolution());   // Debugging
+  Serial.printf("Wait %dms\n", sensors.millisToWaitForConversion(sensors.getResolution()));   // Debugging
+  Serial.printf("Power Supply: %f\n", sensors.readPowerSupply(DS18B20_address[0]));   // Debugging
+
   sensors.requestTemperatures();
-  delay(750);  // This seems critical to get the sensors to work with AtomLite
-  /*
-  if (true) {
-    Serial.printf("TEST: %f\n", sensors.getTempCByIndex(0));
-    Serial.printf("TEST: %f\n", sensors.getTempCByIndex(1));
-    Serial.printf("TEST: %f\n", sensors.getTempCByIndex(2));
-    Serial.printf("TEST: %f\n", sensors.getTempCByIndex(3));
-    Serial.printf("TEST: %f\n", sensors.getTempCByIndex(4));
-  }
-  else {
-    Serial.printf("TEST: %f\n", sensors.requestTemperaturesByAddress(DS18B20_address[0]));
-    Serial.printf("TEST: %f\n", sensors.requestTemperaturesByAddress(DS18B20_address[1]));
-    Serial.printf("TEST: %f\n", sensors.requestTemperaturesByAddress(DS18B20_address[2]));
-    Serial.printf("TEST: %f\n", sensors.requestTemperaturesByAddress(DS18B20_address[3]));
-    Serial.printf("TEST: %f\n", sensors.requestTemperaturesByAddress(DS18B20_address[4]));
-  }
-  */
+  //delay(750);  // This seems critical to get the sensors to work with AtomLite
+  delay(sensors.millisToWaitForConversion(sensors.getResolution()));
 
   const unsigned int num_DS18B20 = sensors.getDeviceCount();
   Serial.printf("Number of DS18B20: %d\n", num_DS18B20);
@@ -405,6 +385,7 @@ void updateDS18B20(const unsigned long currentMillis) {
     delay(10);
     const String mac_s      = deviceAddressToString(mac);
     const float temperature = sensors.getTempCByIndex(i);
+    //Serial.printf("%s - %f\n", mac_s.c_str(), temperature);
     m[F("mac")]         = mac_s;
     m[F("temperature")] = temperature;
 
@@ -440,7 +421,7 @@ void loop() {
     previousMillis = currentMillis;
 
     Serial.printf("DHT22 pin: %d\n", DHTPIN);
-    Serial.printf("DS18B20 pin: %d\n", oneWireBus);
+    Serial.printf("DS18B20 pin: %d\n", ONEWIREBUS);
 
     updateDHT22(currentMillis);
 
@@ -467,7 +448,7 @@ void loop() {
     //size_t strftime(local_time, 30, "%s", timeinfo);
 
     //Serial.println(timeinfo->tm_hour);
-    Serial.printf("tm_min: %d\n", timeinfo->tm_min);
+    //Serial.printf("tm_min: %d\n", timeinfo->tm_min);
     //Serial.println(timeinfo);
 
     metriques[F("time")] = local_time;
