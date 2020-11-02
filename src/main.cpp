@@ -7,7 +7,7 @@
 // Import required libraries
 #include <Arduino.h>
 #ifdef M5ATOM
-#include <M5Atom.h>
+//#include <M5Atom.h>
 #include <FastLED.h>
 #endif
 
@@ -28,7 +28,7 @@
 
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
-#include <PubSubClient.h>
+#include <PubSubClient.h>   // MQTT Client
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -44,9 +44,9 @@
 */
 
 #ifdef M5ATOM
-#define LED_TYPE    WS2812
+#define LED_TYPE WS2812
 #define COLOR_ORDER GRB
-#define BRIGHTNESS          44
+#define BRIGHTNESS 20
 // Internal LED controller
 #define NUM_LEDS    1
 CRGB ledAtom[NUM_LEDS];
@@ -164,19 +164,15 @@ void setup_wifi() {
   int led_state = 0;
   // https://github.com/esikora/ESP32App_Led_IR/blob/master/ESP32App_Led_IR.ino
   Serial.println("A");
-  FastLED.addLeds<NEOPIXEL, LED_BUILTIN>(ledAtom, NUM_LEDS);
+  //FastLED.addLeds<NEOPIXEL, LED_BUILTIN>(ledAtom, NUM_LEDS);
+  //FastLED.addLeds<LED_TYPE, LED_BUILTIN, GRB>(ledAtom, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, LED_BUILTIN>(ledAtom, NUM_LEDS);
   Serial.println("B");
-  FastLED.clear();
-  Serial.println("C");
   FastLED.setBrightness(BRIGHTNESS);
-  Serial.println("D");
-  ledAtom[0].setRGB(120,0,160);
-  Serial.println(ledAtom[0]);
   Serial.println("E");
-  //FastLED.show();
+  ledAtom[0] = CRGB::Green;
+  FastLED.show();
   Serial.println("F");
-  M5.dis.drawpix(0, CRGB(200, 200, 40));
-  Serial.println("G");
 
   // We start by connecting to a WiFi network
   Serial.printf("\nConnecting to %s\n", ssid);
@@ -196,23 +192,23 @@ void setup_wifi() {
     // queue to manually reset the device.
     //FastLED.clear();
     if (++led_state % 2 == 0) {
-      ledAtom[0].setRGB(130, 0, 0);
+      ledAtom[0] = CRGB::Black;
     }
     else {
-      ledAtom[0].setRGB(0, 0, 130);
+      ledAtom[0] = CRGB::Green;
     }
-    //FastLED.show();
+    Serial.println("R");
+    FastLED.show();
+    Serial.println("S");
   }
 
   randomSeed(micros());
 
-  Serial.println(F(""));
-  Serial.println(F("WiFi connected"));
+  Serial.println(F("\nWiFi connected"));
   Serial.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
-  ledAtom[0].setRGB(0, 200, 0);
   delay(1000);
-  ledAtom[0].setRGB(0, 0, 0);
-  //FastLED.show();
+  ledAtom[0] = CRGB::Black;
+  FastLED.show();
 
   setup_mDNS();
 }
@@ -323,8 +319,10 @@ void setup() {
 
 #ifdef M5ATOM
   // Enable Serial, disable I2C, enable Display
-  M5.begin(true, false, false);
-  Serial.println();
+  //M5.begin(true, false, false);
+  //Serial.println();
+  oneWire.begin(ONEWIREBUS);
+  delay(100);
   sensors.begin();
 #endif
 
