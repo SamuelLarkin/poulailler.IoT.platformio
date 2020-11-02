@@ -7,7 +7,6 @@
 // Import required libraries
 #include <Arduino.h>
 #ifdef M5ATOM
-//#include <M5Atom.h>
 #include <FastLED.h>
 #endif
 
@@ -163,16 +162,12 @@ void setup_wifi() {
 
   int led_state = 0;
   // https://github.com/esikora/ESP32App_Led_IR/blob/master/ESP32App_Led_IR.ino
-  Serial.println("A");
   //FastLED.addLeds<NEOPIXEL, LED_BUILTIN>(ledAtom, NUM_LEDS);
   //FastLED.addLeds<LED_TYPE, LED_BUILTIN, GRB>(ledAtom, NUM_LEDS);
   FastLED.addLeds<LED_TYPE, LED_BUILTIN>(ledAtom, NUM_LEDS);
-  Serial.println("B");
   FastLED.setBrightness(BRIGHTNESS);
-  Serial.println("E");
   ledAtom[0] = CRGB::Green;
   FastLED.show();
-  Serial.println("F");
 
   // We start by connecting to a WiFi network
   Serial.printf("\nConnecting to %s\n", ssid);
@@ -190,16 +185,13 @@ void setup_wifi() {
 
     // Blink the builtin led until we are connected to WiFi. This is an external
     // queue to manually reset the device.
-    //FastLED.clear();
     if (++led_state % 2 == 0) {
       ledAtom[0] = CRGB::Black;
     }
     else {
       ledAtom[0] = CRGB::Green;
     }
-    Serial.println("R");
     FastLED.show();
-    Serial.println("S");
   }
 
   randomSeed(micros());
@@ -291,6 +283,12 @@ void setup_sensors(DHT& dht, DallasTemperature& sensors) {
   }
 
   // Start the DS18B20 sensor
+#ifdef M5ATOM
+  oneWire.begin(ONEWIREBUS);
+  delay(100);
+  sensors.begin();   // WTF Why do we need to call `sensors.begin()` twice?
+#endif
+
   sensors.begin();
   sensors.setResolution(9);
   delay(1200);
@@ -316,15 +314,6 @@ void setup() {
   delay(1000);
 
   setup_serial();
-
-#ifdef M5ATOM
-  // Enable Serial, disable I2C, enable Display
-  //M5.begin(true, false, false);
-  //Serial.println();
-  oneWire.begin(ONEWIREBUS);
-  delay(100);
-  sensors.begin();
-#endif
 
   setup_sensors(dht, sensors);
   setup_wifi();
