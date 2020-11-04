@@ -6,6 +6,7 @@
 
 // Import required libraries
 #include <Arduino.h>
+
 #ifdef M5ATOM
 #include <FastLED.h>
 #endif
@@ -22,18 +23,14 @@
 #include <ESPAsyncWebServer.h>
 #endif
 
-// [ArduinoJSON](https://arduinojson.org)
-#include <ArduinoJson.h>
-
 #include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <PubSubClient.h>   // MQTT Client
-#include <OneWire.h>
+#include <ArduinoJson.h>   // [ArduinoJSON](https://arduinojson.org)
 #include <DallasTemperature.h>
-
+#include <DHT.h>
+#include <OneWire.h>
+#include <PubSubClient.h>   // MQTT Client
 #include <SPIFFS.h>
 
-#include "html.h"
 #include "temps.h"
 #include "credential.h"
 
@@ -127,24 +124,6 @@ unsigned long previousMillis = 0;    // will store last time DHT was updated
 // Updates DHT readings every 10 seconds
 const long interval = 10000;
 
-
-
-
-// Replaces placeholder with DHT22 & DS18B20 values
-// The async web server uses template/ %variable% that can be replaced programatically.
-String processor(const String& var) {
-  //Serial.println(var);
-  if (var == F("TEMPERATURE")) {
-    return String(DHT22_temperature);
-  }
-  else if (var == F("HUMIDITY")) {
-    return String(DHT22_humidity);
-  }
-  else if (var == F("DTEMPERATURE")) {
-    return String(DS18B20_temperature);
-  }
-  return String();
-}
 
 
 
