@@ -31,6 +31,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+#include <SPIFFS.h>
+
 #include "html.h"
 #include "temps.h"
 #include "credential.h"
@@ -209,8 +211,10 @@ void setup_wifi() {
 
 void setup_web_server(AsyncWebServer& web_server) {
   // Route for root / web page
+  //web_server.serveStatic("/", SPIFFS, "/").setDefaultFile("/index.html");
+  //web_server.serveStatic("/", SPIFFS, "/index.html");
   web_server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, F("text/html"), index_html, processor);
+    request->send(SPIFFS, "/index.html", "text/html");
   });
 
   web_server.on("/DHT22/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -314,6 +318,7 @@ void setup() {
   delay(1000);
 
   setup_serial();
+  SPIFFS.begin();
 
   setup_sensors(dht, sensors);
   setup_wifi();
