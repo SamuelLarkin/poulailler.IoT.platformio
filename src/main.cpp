@@ -193,6 +193,16 @@ void setup_web_server(AsyncWebServer& web_server) {
   // Route for root / web page
   web_server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
+  web_server.on("/date", HTTP_GET, [](AsyncWebServerRequest * request) {
+    const char* const value = metriques[F("date")];
+    request->send_P(200, F("text/html"), value);
+  });
+
+  web_server.on("/time", HTTP_GET, [](AsyncWebServerRequest * request) {
+    const uint32_t value = metriques[F("time")].as<uint32_t>();
+    request->send_P(200, F("text/html"), String(value).c_str());
+  });
+
   web_server.on("/DHT22/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, F("text/html"), String(DHT22_temperature).c_str());
   });
@@ -448,23 +458,40 @@ void loop() {
 
     printLocalTime();
     
-    // NOTE: It may take some time to update the NTP time.
-    //time_t now;
-    time_t now = time(nullptr);
-    // [struct tm](https://github.com/esp8266/Arduino/blob/master/tools/sdk/libc/xtensa-lx106-elf/include/time.h)
-    struct tm * timeinfo;
-    time(&now);
-    timeinfo = localtime(&now);  
-    char local_time[32];
-    const size_t a = strftime(local_time, 30, "%Y-%m-%d %H:%M:%S %Z", timeinfo);
-    // The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). (TZ) (Calculated from mktime(tm).)
-    //size_t strftime(local_time, 30, "%s", timeinfo);
+    if (true) {
+      // [ESP32 NTP Client-Server: Get Date and Time (Arduino IDE)](https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/)
+      struct tm timeinfo;
+      if(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");
+      }
+      Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+      //time_t metrique_time = mktime(&timeinfo);
+      const uint32_t metrique_time = mktime(&timeinfo);
+      Serial.println(metrique_time);
+      char local_time[64];
+      const size_t a = strftime(local_time, 62, "%Y-%m-%d %H:%M:%S %Z", &timeinfo);
+      metriques[F("date")] = local_time;
+      metriques[F("time")] = metrique_time;
+    }
+    else {
+      // NOTE: It may take some time to update the NTP time.
+      //time_t now;
+      time_t now = time(nullptr);
+      // [struct tm](https://github.com/esp8266/Arduino/blob/master/tools/sdk/libc/xtensa-lx106-elf/include/time.h)
+      struct tm * timeinfo;
+      time(&now);
+      timeinfo = localtime(&now);  
+      char local_time[32];
+      const size_t a = strftime(local_time, 30, "%Y-%m-%d %H:%M:%S %Z", timeinfo);
+      // The number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC). (TZ) (Calculated from mktime(tm).)
+      //size_t strftime(local_time, 30, "%s", timeinfo);
 
-    //Serial.println(timeinfo->tm_hour);
-    //Serial.printf("tm_min: %d\n", timeinfo->tm_min);
-    //Serial.println(timeinfo);
+      //Serial.println(timeinfo->tm_hour);
+      //Serial.printf("tm_min: %d\n", timeinfo->tm_min);
+      //Serial.println(timeinfo);
 
-    metriques[F("time")] = local_time;
+      metriques[F("time")] = local_time;
+    }
 
     serializeJsonPretty(metriques, Serial);
     Serial.println();

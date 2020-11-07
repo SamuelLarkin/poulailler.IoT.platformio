@@ -27,6 +27,9 @@
   <p>
     <span id="date"></span>
   </p>
+  <p>
+    <span id="time"></span>
+  </p>
 
   <p>
     <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
@@ -103,8 +106,10 @@
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
         let metriques = JSON.parse(this.responseText);
-        let date = new Date(Date.parse(metriques.time));
+        let date = new Date(Date.parse(metriques.date));
+        let time = new Date(metriques.time * 1000);   // Concerts from seconds to milliseconds since epoch.
         document.getElementById("date").innerHTML              = date.toSamString();
+        document.getElementById("time").innerHTML              = time.toSamString();
         document.getElementById("DHT22_humidity").innerHTML    = metriques.DHT22.humidity;
         document.getElementById("DHT22_temperature").innerHTML = metriques.DHT22.temperature;
         metriques.DS18B20.forEach(function(value, index) {
