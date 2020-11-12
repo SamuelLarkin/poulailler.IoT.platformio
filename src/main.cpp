@@ -65,29 +65,29 @@ float DHT22_humidity    = -100.0;
 
 
 /*
-08:28:41.098 -> ROM = 28 9E 7F 19 3A 19 1 A1
-08:28:41.132 ->   Chip = DS18B20
-08:28:42.114 ->   Data = 1 50 1 4B 46 1F FF 1F 10 C1  CRC=C1
-08:28:42.148 ->   Temperature = 21.00 Celsius, 69.80 Fahrenheit
-
-08:28:42.182 -> ROM = 28 C1 CE 23 3A 19 1 7A
-08:28:42.215 ->   Chip = DS18B20
-08:28:43.130 ->   Data = 1 50 1 4B 46 1F FF 1F 10 C1  CRC=C1
-08:28:43.164 ->   Temperature = 21.00 Celsius, 69.80 Fahrenheit
-
-08:28:43.232 -> ROM = 28 71 D3 D 3A 19 1 88
+08:28:43.232 -> ROM = 28 71 D3 0D 3A 19 01 88
 08:28:43.266 ->   Chip = DS18B20
-08:28:44.178 ->   Data = 1 49 1 4B 46 7F FF C 10 D5  CRC=D5
+08:28:44.178 ->   Data = 01 49 1 4B 46 7F FF 0C 10 D5  CRC=D5
 08:28:44.212 ->   Temperature = 20.56 Celsius, 69.01 Fahrenheit
 
-08:28:44.280 -> ROM = 28 D5 2C 18 3A 19 1 78
+08:28:41.098 -> ROM = 28 9E 7F 19 3A 19 01 A1
+08:28:41.132 ->   Chip = DS18B20
+08:28:42.114 ->   Data = 01 50 1 4B 46 1F FF 1F 10 C1  CRC=C1
+08:28:42.148 ->   Temperature = 21.00 Celsius, 69.80 Fahrenheit
+
+08:28:42.182 -> ROM = 28 C1 CE 23 3A 19 01 7A
+08:28:42.215 ->   Chip = DS18B20
+08:28:43.130 ->   Data = 01 50 01 4B 46 1F FF 1F 10 C1  CRC=C1
+08:28:43.164 ->   Temperature = 21.00 Celsius, 69.80 Fahrenheit
+
+08:28:44.280 -> ROM = 28 D5 2C 18 3A 19 01 78
 08:28:44.280 ->   Chip = DS18B20
-08:28:45.192 ->   Data = 1 55 1 4B 46 7F FF C 10 BE  CRC=BE
+08:28:45.192 ->   Data = 01 55 01 4B 46 7F FF 0C 10 BE  CRC=BE
 08:28:45.260 ->   Temperature = 21.31 Celsius, 70.36 Fahrenheit
 
-08:28:45.294 -> ROM = 28 D7 9A F0 39 19 1 74
+08:28:45.294 -> ROM = 28 D7 9A F0 39 19 01 74
 08:28:45.327 ->   Chip = DS18B20
-08:28:46.241 ->   Data = 1 55 1 4B 46 7F FF C 10 BE  CRC=BE
+08:28:46.241 ->   Data = 01 55 01 4B 46 7F FF 0C 10 BE  CRC=BE
 08:28:46.275 ->   Temperature = 21.31 Celsius, 70.36 Fahrenheit
 
 08:28:46.343 -> No more addresses.
