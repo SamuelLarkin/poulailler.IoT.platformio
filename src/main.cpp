@@ -203,12 +203,32 @@ void setup_web_server(AsyncWebServer& web_server) {
     request->send_P(200, F("text/html"), String(value).c_str());
   });
 
+  web_server.on("/metriques", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String json;
+    serializeJsonPretty(metriques, json);
+    request->send_P(200, F("application/json"), json.c_str());
+  });
+
+  web_server.on("/DHT22", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String json;
+    serializeJson(metriques[F("DHT22")], json);
+    request->send_P(200, F("application/json"), json.c_str());
+  });
+
   web_server.on("/DHT22/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, F("text/html"), String(DHT22_temperature).c_str());
+    const float value = metriques[F("DHT22")][F("temperature")].as<float>();
+    request->send_P(200, F("text/html"), String(value).c_str());
   });
 
   web_server.on("/DHT22/humidity", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, F("text/html"), String(DHT22_humidity).c_str());
+    const float value = metriques[F("DHT22")][F("humidity")].as<float>();
+    request->send_P(200, F("text/html"), String(value).c_str());
+  });
+
+  web_server.on("/DS18B20", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String json;
+    serializeJsonPretty(metriques[F("DS18B20")], json);
+    request->send_P(200, F("application/json"), json.c_str());
   });
 
   web_server.on("/DS18B20/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -217,18 +237,15 @@ void setup_web_server(AsyncWebServer& web_server) {
     request->send_P(200, F("application/json"), json.c_str());
   });
 
-  web_server.on("/metriques", HTTP_GET, [](AsyncWebServerRequest * request) {
+#ifdef ASYNCWEBSERVER_REGEX
+  web_server.on("^\\/DS18B20\\/([0-9A-Fa-f]+)$", HTTP_GET, [] (AsyncWebServerRequest * request) {
+    const String sensorId = request->pathArg(0);
     String json;
-    serializeJsonPretty(metriques, json);
+    serializeJsonPretty(metriques[F("DS18B20")][sensorId], json);
     request->send_P(200, F("application/json"), json.c_str());
   });
-
-#ifdef ASYNCWEBSERVER_REGEX
-  web_server.on("^\\/sensor\\/([0-9]+)$", HTTP_GET, [] (AsyncWebServerRequest * request) {
-    const String sensorId = request->pathArg(0);
-    request->send_P(200, F("text/html"), sensorId.c_str());
-  });
 #endif
+
 
   web_server.onNotFound([](AsyncWebServerRequest * request) {
     request->send(200, F("text/html"), F("Il n'y a pas de page"));
