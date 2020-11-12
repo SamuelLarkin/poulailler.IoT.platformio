@@ -301,13 +301,11 @@ void setup_sensors(DHT& dht, DallasTemperature& sensors) {
   delay(1200);
   {
     const unsigned int num_DS18B20 = sensors.getDeviceCount();
-    JsonArray data = metriques.createNestedArray(F("DS18B20"));
+    auto data = metriques.createNestedObject(F("DS18B20"));
     for (unsigned int i=0; i<num_DS18B20; ++i) {
-      auto m = data.createNestedObject();
       DeviceAddress mac;
       sensors.getAddress(mac, i);
-      m["mac"] = deviceAddressToString(mac);
-      m["temperature"] = -120.0f;
+      data[deviceAddressToString(mac)] = -120.0f;
     }
   }
 
@@ -417,23 +415,21 @@ void updateDS18B20(const unsigned long currentMillis) {
   const unsigned int num_DS18B20 = sensors.getDeviceCount();
   Serial.printf("Number of DS18B20: %d\n", num_DS18B20);
 
-  JsonArray data = metriques[F("DS18B20")];
+  auto data = metriques[F("DS18B20")];
   for (unsigned int i=0; i<num_DS18B20; ++i) {
-    auto m = data[i];
     DeviceAddress mac;
     sensors.getAddress(mac, i);
     delay(10);
     const String mac_s      = deviceAddressToString(mac);
     const float temperature = sensors.getTempCByIndex(i);
     //Serial.printf("%s - %f\n", mac_s.c_str(), temperature);
-    m[F("mac")]         = mac_s;
-    m[F("temperature")] = temperature;
+    data[mac_s] = temperature;
 
     if (send_to_MQTT) {
       // NOTE:
       // [MAX_PACKET_SIZE value in PubSubClient.h? That payload looks like it'll exceed the default 128 bytes](https://github.com/knolleary/pubsubclient/issues/382#issuecomment-367408738)
       if (false) {
-        const size_t s = serializeJson(m[F("temperature")], mqtt_buffer);
+        const size_t s = serializeJson(data[F("DS18B20")][F("temperature")], mqtt_buffer);
         assert(s < 1024);
         Serial.println(mqtt_buffer);
       }
