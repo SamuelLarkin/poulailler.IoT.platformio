@@ -397,6 +397,13 @@ void updateDHT22(const unsigned long currentMillis) {
     const bool temperature_response = mqtt_client.publish("poulailler/temperature/DHT22/0", String(DHT22_temperature).c_str());
     const bool humidity_response    = mqtt_client.publish("poulailler/humidity/DHT22/0", String(DHT22_humidity).c_str());
     //Serial.println(response ? F("MQTT DHT22 Success") : F("MQTT DHT22 Failed"));
+
+    // Blink
+    ledAtom[0] = CRGB::Cyan;
+    FastLED.show();
+    delay(250);
+    ledAtom[0] = CRGB::Black;
+    FastLED.show();
   }
 }
 
