@@ -138,8 +138,14 @@ void setup_mDNS() {
 
 
 
-void setup_wifi() {
-  delay(500);
+void setup_wifi(uint32_t delay_time = 500) {
+  if (WiFi.status() == WL_CONNECTED) {
+    return;
+  }
+
+  delay(delay_time);
+
+  //WiFi.onEvent();
 
   int led_state = 0;
   // https://github.com/esikora/ESP32App_Led_IR/blob/master/ESP32App_Led_IR.ino
@@ -153,15 +159,31 @@ void setup_wifi() {
   // We start by connecting to a WiFi network
   Serial.printf("\nConnecting to %s\n", ssid);
 
+  // Don't write to flash the SSID and password.
+  WiFi.persistent(false);
+  WiFi.setAutoReconnect(false);
+  delay(100);
+  WiFi.disconnect();
+  delay(100);
+  WiFi.mode(WIFI_STA);
+  delay(100);
   WiFi.begin(ssid, password);
+  delay(1500);
 #ifdef ESP32
   WiFi.setHostname("poulailler");
 #else
   WiFi.hostname("poulailler");
 #endif
 
+  //wl_status_t state = WL_DISCONNECTED;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
+    if (WiFi.status() == WL_DISCONNECTED) {
+      WiFi.disconnect(true);
+      delay(500);
+      WiFi.reconnect();
+    }
+    //Serial.println(WiFi.status());
     Serial.print(F("."));
 
     // Blink the builtin led until we are connected to WiFi. This is an external
@@ -173,6 +195,10 @@ void setup_wifi() {
       ledAtom[0] = CRGB::Green;
     }
     FastLED.show();
+
+    // https://github.com/espressif/arduino-esp32/issues/2501#issuecomment-500073992
+    esp_sleep_enable_timer_wakeup(10);
+    esp_deep_sleep_start();
   }
 
   randomSeed(micros());
@@ -460,11 +486,6 @@ void updateDS18B20(const unsigned long currentMillis) {
 
 
 void loop() {
-  if (!mqtt_client.connected()) {
-    reconnect_mqtt();
-  }
-  mqtt_client.loop();
-
   const unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     // save the last time you updated the DHT values
@@ -472,6 +493,14 @@ void loop() {
 
     Serial.printf("DHT22 pin: %d\n", DHTPIN);
     Serial.printf("DS18B20 pin: %d\n", ONEWIREBUS);
+
+    // Try to reconnect WiFi if disconnected.
+    setup_wifi(10000);
+
+    if (!mqtt_client.connected()) {
+      reconnect_mqtt();
+    }
+    mqtt_client.loop();
 
     updateDHT22(currentMillis);
 
