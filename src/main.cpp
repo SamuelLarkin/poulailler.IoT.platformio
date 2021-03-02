@@ -44,7 +44,7 @@
 #ifdef M5ATOM
 #define LED_TYPE WS2812
 #define COLOR_ORDER GRB
-#define BRIGHTNESS 20
+#define BRIGHTNESS 5
 // Internal LED controller
 #define NUM_LEDS    1
 CRGB ledAtom[NUM_LEDS];
