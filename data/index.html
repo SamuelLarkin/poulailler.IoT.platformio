@@ -59,32 +59,32 @@
   <ul>
     <li>
       <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">DS18B20 Temp&eacute;rature</span> 
-      <span class="DS18B20_temperature">%DTEMPERATURE%</span>
+      <span class="dht-labels">DS18B20 Temp&eacute;rature porte</span> 
+      <span class="DS18B20_temperature" id="289E7F193A1901A1">%DTEMPERATURE%</span>
       <sup class="units">&deg;C</sup>
     </li>
     <li>
       <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">DS18B20 Temp&eacute;rature</span> 
-      <span class="DS18B20_temperature">%DTEMPERATURE%</span>
+      <span class="dht-labels">DS18B20 Temp&eacute;rature fen&ecirc;tre</span> 
+      <span class="DS18B20_temperature" id="28C1CE233A19017A">%DTEMPERATURE%</span>
       <sup class="units">&deg;C</sup>
     </li>
     <li>
       <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">DS18B20 Temp&eacute;rature</span> 
-      <span class="DS18B20_temperature">%DTEMPERATURE%</span>
+      <span class="dht-labels">DS18B20 Temp&eacute;rature trappe</span> 
+      <span class="DS18B20_temperature" id="2871D30D3A190188">%DTEMPERATURE%</span>
       <sup class="units">&deg;C</sup>
     </li>
     <li>
       <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">DS18B20 Temp&eacute;rature</span> 
-      <span class="DS18B20_temperature">%DTEMPERATURE%</span>
+      <span class="dht-labels">DS18B20 Temp&eacute;rature abreuvoir</span> 
+      <span class="DS18B20_temperature" id="28D79AF039190174">%DTEMPERATURE%</span>
       <sup class="units">&deg;C</sup>
     </li>
     <li>
       <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
-      <span class="dht-labels">DS18B20 Temp&eacute;rature</span> 
-      <span class="DS18B20_temperature">%DTEMPERATURE%</span>
+      <span class="dht-labels">DS18B20 Temp&eacute;rature libre</span> 
+      <span class="DS18B20_temperature" id="28D52C183A190178">%DTEMPERATURE%</span>
       <sup class="units">&deg;C</sup>
     </li>
   </ul>
@@ -126,7 +126,8 @@
         document.getElementById("DHT22_temperature").innerHTML = metriques.DHT22.temperature;
         Object.entries(metriques.DS18B20).forEach(function(entry, index) {
           const [mac, temperature] = entry;
-          let element = document.getElementsByClassName("DS18B20_temperature")[index];
+          //let element = document.getElementsByClassName("DS18B20_temperature")[index];
+          let element = document.getElementById(mac.toUpperCase());
           element.innerHTML = temperature;
           element.parentNode.title = mac;
         });
