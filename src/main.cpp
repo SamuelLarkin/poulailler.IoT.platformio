@@ -446,6 +446,13 @@ void updateDS18B20(const unsigned long currentMillis) {
       topic += mac_s;
       const bool response = mqtt_client.publish(topic.c_str(), String(temperature).c_str());
       //Serial.println(response ? F("MQTT DS18B20 Success") : F("MQTT DS18B20 Failed"));
+
+      // Blink
+      ledAtom[0] = CRGB::Purple;
+      FastLED.show();
+      delay(250);
+      ledAtom[0] = CRGB::Black;
+      FastLED.show();
     }
   }
 }
